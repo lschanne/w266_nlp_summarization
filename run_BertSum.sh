@@ -5,7 +5,7 @@ D="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd ${D}
 
 MODEL_DIR=${D}/models
-DATASET=gigaword
+DATASET=cnn_dailymail
 DATA_DIR=${D}/data
 DATASET_DIR=${DATA_DIR}/${DATASET}
 MAP_DIR=${DATASET_DIR}/BertSum_maps
@@ -21,7 +21,7 @@ BERTSUM_SRC=${BERTSUM_DIR}/src
 PY_SCRIPT=${BERTSUM_SRC}/preprocess.py
 CORE_NLP_DIR=${D}/stanford-corenlp-full-2017-06-09
 RESULTS_DIR=${DATASET_DIR}/BertSum_results
-FILE_PREFIX=gigawrd
+FILE_PREFIX=${DATASET}
 
 export PYTORCH_PRETRAINED_BERT_CACHE=${DATA_DIR}/pretrained_bert
 for file in `find ${CORE_NLP_DIR} -name "*.jar"`

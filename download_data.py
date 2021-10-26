@@ -7,7 +7,7 @@ import tensorflow_datasets as tfds
 
 from prepro.data_builder import hashhex
 
-dataset_name = 'gigaword'
+dataset_name = 'cnn_dailymail'
 DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(DIR, 'data', dataset_name)
 DOC_DIR = os.path.join(DATA_DIR, 'raw_documents')
@@ -21,6 +21,19 @@ for dir_ in (DOC_DIR, SUMMARY_DIR, MAP_DIR, STORY_DIR):
 
 data = tfds.load(dataset_name)
 
+key_map = {
+    'gigaword': {
+        'document': 'document',
+        'summary': 'summary',
+    },
+    'cnn_dailymail': {
+        'document': 'article',
+        'summary': 'highlights',
+    },
+}
+
+doc_key = key_map[dataset_name]['document']
+summary_key = key_map[dataset_name]['summary']
 for key, subset in data.items():
     if key == 'validation':
         key = 'valid'
@@ -31,8 +44,8 @@ for key, subset in data.items():
         hashed_fh = hashhex(unhashed_fh)
         files.append(f'{unhashed_fh}\n')
         for type_, d in (
-            ('document', DOC_DIR),
-            ('summary', SUMMARY_DIR),
+            (doc_key, DOC_DIR),
+            (summary_key, SUMMARY_DIR),
         ):
             text = bytes.decode(row[type_].numpy())
             fh = os.path.join(d, unhashed_fh)
@@ -40,9 +53,9 @@ for key, subset in data.items():
                 f.write(text)
         
         text = '\n'.join((
-            bytes.decode(row['document'].numpy()),
+            bytes.decode(row[doc_key].numpy()),
             '\n@highlight\n',
-            bytes.decode(row['summary'].numpy()),
+            bytes.decode(row[summary_key].numpy()),
         ))
         fh = os.path.join(STORY_DIR, f'{hashed_fh}.story')
         with open(fh, 'w') as f:
