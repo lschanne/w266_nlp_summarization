@@ -3,7 +3,8 @@ D="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 BERT_DIR=${D}/data/pretrained_bert
 
 sudo apt-get update
-sudo apt-get install python3 unzip default-jre
+sudo apt-get install python3 unzip default-jre libxml-parser-perl
+
 cd ${D}
 python3 -m venv venv_w266_final
 source venv_w266_final/bin/activate
@@ -21,6 +22,27 @@ rm stanford-corenlp-full-2017-06-09.zip
 mkdir -p ${BERT_DIR}
 cd ${BERT_DIR}
 wget -q -O- https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased.tar.gz | tar -xvz
+cd ${D}
+
+# Install pyrouge
+git clone -b master https://github.com/bheinzerling/pyrouge
+cd pyrouge
+git checkout 08e9cc3
+pip install -e .
+
+# Install official rouge script
+git clone -b master https://github.com/andersjo/pyrouge.git rouge
+cd rouge
+git checkout 3b6c415
+cd ..
+mkdir -p ${D}/pyrouge/rouge/tools/ROUGE-1.5.5/data
+pyrouge_set_rouge_path ${D}/pyrouge/rouge/tools/ROUGE-1.5.5/
+
+# Regenerate exceptions DB for pyrouge
+cd rouge/tools/ROUGE-1.5.5/data
+rm WordNet-2.0.exc.db
+./WordNet-2.0-Exceptions/buildExeptionDB.pl ./WordNet-2.0-Exceptions ./smart_common_words.txt ./WordNet-2.0.exc.db
+python -m pyrouge.test
 cd ${D}
 
 

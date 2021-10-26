@@ -1,5 +1,6 @@
 BertSum/
 data/
 models/
+pyrouge/
 venv_*
 stanford-corenlp-full-2017-06-09*
