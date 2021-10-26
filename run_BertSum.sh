@@ -48,7 +48,7 @@ python ${BERTSUM_SRC}/train.py -mode train -encoder transformer -dropout 0.1 \
     -bert_data_path ${BERT_FORMATTED_DIR}/${DATASET} \
     -model_path ${MODEL_DIR}/bertsum_transformer -lr 2e-3 \
     -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam \
-    -train_steps 50000 -accum_count 2 -log_file ${LOG_DIR}/bert_transformer \
+    -train_steps 30000 -accum_count 2 -log_file ${LOG_DIR}/bert_transformer \
     -use_interval true -warmup_steps 10000 -ff_size 2048 -inter_layers 2 \
     -heads 8
 

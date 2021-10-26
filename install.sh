@@ -1,7 +1,9 @@
 #!/bin/bash
 D="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-BERT_DIR=${D}/data/pretained_bert
+BERT_DIR=${D}/data/pretrained_bert
 
+sudo apt-get update
+sudo apt-get install python3 unzip default-jre
 cd ${D}
 python3 -m venv venv_w266_final
 source venv_w266_final/bin/activate
