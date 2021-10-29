@@ -42,13 +42,13 @@ echo "Format to lines..."
 mkdir -p ${LINE_FORMATTED_DIR}
 python ${PY_SCRIPT} -mode format_to_lines -raw_path ${TOKENIZED_DIR} \
     -save_path ${LINE_FORMATTED_DIR}/${DATASET} -map_path ${MAP_DIR} \
-    -lower -log_file ${LOG_DIR}/format_to_lines.log
+    -lower -log_file ${LOG_DIR}/format_to_lines.log -n_cpus 8
 
 echo "Format to bert..."
 mkdir -p ${BERT_FORMATTED_DIR}
 python ${PY_SCRIPT} -mode format_to_bert -raw_path ${LINE_FORMATTED_DIR} \
     -save_path ${BERT_FORMATTED_DIR} -map_path ${MAP_DIR} -oracle_mode greedy \
-    -n_cpus 4 -log_file ${LOG_DIR}/format_to_bert.log -min_nsents 1
+    -n_cpus 8 -log_file ${LOG_DIR}/format_to_bert.log
 
 echo "Training..."
 python ${BERTSUM_SRC}/train.py -mode train -encoder transformer -dropout 0.1 \
@@ -57,14 +57,15 @@ python ${BERTSUM_SRC}/train.py -mode train -encoder transformer -dropout 0.1 \
     -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam \
     -train_steps 30000 -accum_count 2 -log_file ${LOG_DIR}/bert_transformer \
     -use_interval true -warmup_steps 10000 -ff_size 2048 -inter_layers 2 \
+    -visible_gpus 0 -gp_ranks 0 -world_size 1 \
     -heads 8
 
 echo "Evaluating..."
 mkdir -p ${RESULTS_DIR}
 python ${BERTSUM_SRC}/train.py -mode validate \
     -bert_data_path ${BERT_FORMATTED_DIR}/${DATASET} \
-    -model_path ${MODEL_DIR}/bertsum_transformer  -visible_gpus -1  \
-    -gpu_ranks 0 -batch_size 30000  \
+    -model_path ${MODEL_DIR}/bertsum_transformer  -visible_gpus 0  \
+    -gpu_ranks 0 -batch_size 30000  -world_size 1 \
     -log_file ${LOG_DIR}/bertsum_transformer_evaluation  \
     -result_path ${RESULTS_DIR}/bertsum_transformer -test_all \
     -block_trigram true -temp_dir /tmp \
