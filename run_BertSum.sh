@@ -50,25 +50,29 @@ python ${PY_SCRIPT} -mode format_to_bert -raw_path ${LINE_FORMATTED_DIR} \
     -save_path ${BERT_FORMATTED_DIR} -map_path ${MAP_DIR} -oracle_mode greedy \
     -n_cpus 8 -log_file ${LOG_DIR}/format_to_bert.log
 
+N_GPU=1
+GPUS=0
+BATCH_SIZE=100
+
 echo "Training..."
 python ${BERTSUM_SRC}/train.py -mode train -encoder transformer -dropout 0.1 \
     -bert_data_path ${BERT_FORMATTED_DIR}/${DATASET} \
     -model_path ${MODEL_DIR}/bertsum_transformer -lr 2e-3 \
-    -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam \
-    -train_steps 30000 -accum_count 2 -log_file ${LOG_DIR}/bert_transformer \
+    -save_checkpoint_steps 1000 -batch_size ${BATCH_SIZE} -decay_method noam \
+    -train_steps 50000 -accum_count 2 -log_file ${LOG_DIR}/bert_transformer \
     -use_interval true -warmup_steps 10000 -ff_size 2048 -inter_layers 2 \
-    -visible_gpus 0 -gp_ranks 0 -world_size 1 \
+    -visible_gpus ${GPUS} -gpu_ranks ${GPUS} -world_size ${N_GPU} \
     -heads 8
 
 echo "Evaluating..."
 mkdir -p ${RESULTS_DIR}
 python ${BERTSUM_SRC}/train.py -mode validate \
     -bert_data_path ${BERT_FORMATTED_DIR}/${DATASET} \
-    -model_path ${MODEL_DIR}/bertsum_transformer  -visible_gpus 0  \
-    -gpu_ranks 0 -batch_size 30000  -world_size 1 \
+    -model_path ${MODEL_DIR}/bertsum_transformer  -visible_gpus 3  \
+    -visible_gpus ${GPUS} -gpu_ranks ${GPUS} -world_size ${N_GPU} \
     -log_file ${LOG_DIR}/bertsum_transformer_evaluation  \
     -result_path ${RESULTS_DIR}/bertsum_transformer -test_all \
-    -block_trigram true -temp_dir /tmp \
+    -batch_size ${BATCH_SIZE} -block_trigram true -temp_dir /tmp \
     -bert_config_path ${BERTSUM_DIR}/bert_config_uncased_base.json
 
 cd ${PREV_DIR}

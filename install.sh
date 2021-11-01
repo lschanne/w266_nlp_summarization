@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# NOTE getting tensorflow gpu setup is a big pain and very system specific, so
+# it's not very viable to add to the script here
+# if you want to use gpus for training/evaluating the models, and I definitely
+# recommend you do, then you'll have to manually set that up yourself.
+# This can be done after running this install.sh script
+
 D="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 BERT_DIR=${D}/data/pretrained_bert
 
