@@ -54,6 +54,6 @@ cd ${D}
 
 
 export PYTHONPATH="${PYTHONPATH}:${D}/BertSum/src"
-python ./download_data.py
+python ./preprocess_data.py
 
 cd ${PREV_DIR}
