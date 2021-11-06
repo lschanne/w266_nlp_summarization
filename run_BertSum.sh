@@ -52,7 +52,7 @@ python ${PY_SCRIPT} -mode format_to_bert -raw_path ${LINE_FORMATTED_DIR} \
 
 N_GPU=1
 GPUS=0
-BATCH_SIZE=100
+BATCH_SIZE=250
 
 echo "Training..."
 python ${BERTSUM_SRC}/train.py -mode train -encoder transformer -dropout 0.1 \
@@ -68,7 +68,7 @@ echo "Evaluating..."
 mkdir -p ${RESULTS_DIR}
 python ${BERTSUM_SRC}/train.py -mode validate \
     -bert_data_path ${BERT_FORMATTED_DIR}/${DATASET} \
-    -model_path ${MODEL_DIR}/bertsum_transformer  -visible_gpus 3  \
+    -model_path ${MODEL_DIR}/bertsum_transformer \
     -visible_gpus ${GPUS} -gpu_ranks ${GPUS} -world_size ${N_GPU} \
     -log_file ${LOG_DIR}/bertsum_transformer_evaluation  \
     -result_path ${RESULTS_DIR}/bertsum_transformer -test_all \
