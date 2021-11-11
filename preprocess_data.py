@@ -1,12 +1,16 @@
 # https://www.tensorflow.org/datasets/overview
 # https://www.tensorflow.org/datasets/catalog/gigaword
 
+import argparse
 import os
 
 import numpy as np
 import tensorflow_datasets as tfds
+from traitlets.config.loader import ArgumentParser
 
+# BertSum imports
 from prepro.data_builder import hashhex
+from train import str2bool
 
 class PreProcesser:
     KEY_MAP = {
@@ -108,4 +112,19 @@ class PreProcesser:
         df.to_csv(os.path.join(self.DATA_DIR, f'{self.dataset_name}.csv'))
 
 if __name__ == '__main__':
-    PreProcesser(do_bertsum=False).main()
+    parser = ArgumentParser()
+    parser.add_argument(
+        '-do_bertsum', type=str2bool, nargs='?', const=True, default=True,
+    )
+    parser.add_argument(
+        '-do_bertsum', type=str2bool, nargs='?', const=True, default=True,
+    )
+    parser.add_argument(
+        '-dataset_name', default='cnn_dailymail',
+    )
+    args = parser.parse_args()
+    PreProcesser(
+        dataset_name=args.dataset_name,
+        do_bertsum=args.do_bertsum,
+        do_t5=args.do_t5,
+    ).main()

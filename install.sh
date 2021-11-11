@@ -14,6 +14,7 @@ sudo apt-get install python3 unzip default-jre libxml-parser-perl
 
 cd ${D}
 python3 -m venv venv_w266_final
+# echo "export PYTHONPATH=\"\${PYTHONPATH}:${D}/PreSumm/src\"" > venv_w266_final/bin/postactivate
 source venv_w266_final/bin/activate
 
 pip install --upgrade pip

@@ -21,9 +21,11 @@ LOG_PATH=${PreSumm}/logs
 BATCH_SIZE=500
 
 python train.py -task ext -mode train -bert_data_path ${BERT_DATA_PATH} \
-    -ext_dropout 0.1 -model_path ${MODEL_PATH} -lr 2e-3 -visible_gpus 0 \
-    -report_every 50 -save_checkpoint_steps 1000 -batch_size ${BATCH_SIZE} \
-    -train_steps 50000 -accum_count 2 -log_file ${LOG_PATH}/ext_bert_cnndm \
+    -model_path ${MODEL_PATH} -batch_size ${BATCH_SIZE} \
+    -log_file ${LOG_PATH}/ext_bert_cnndm \
+    -ext_dropout 0.1 -lr 2e-3 -visible_gpus 0 \
+    -report_every 50 -save_checkpoint_steps 1000 \
+    -train_steps 50000 -accum_count 2 \
     -use_interval true -warmup_steps 10000 -max_pos 512
 
 python train.py -task ext -mode validate -batch_size ${BATCH_SIZE} \
