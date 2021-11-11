@@ -88,7 +88,8 @@ def validate(epoch, tokenizer, model, device, loader):
             generated_ids = model.generate(
                 input_ids = ids,
                 attention_mask = mask, 
-                max_length=150, 
+                max_length=150,
+                min_length=40, 
                 num_beams=2,
                 repetition_penalty=2.5, 
                 length_penalty=1.0, 
@@ -116,7 +117,7 @@ def main():
     LEARNING_RATE = 1e-4    
     SEED = 42              
     MAX_LEN = 512
-    SUMMARY_LEN = 30 
+    SUMMARY_LEN = 150
 
     # random seeds
     torch.manual_seed(SEED) 
