@@ -6,7 +6,6 @@ import os
 
 import numpy as np
 import tensorflow_datasets as tfds
-from traitlets.config.loader import ArgumentParser
 
 # BertSum imports
 from prepro.data_builder import hashhex
@@ -112,7 +111,7 @@ class PreProcesser:
         df.to_csv(os.path.join(self.DATA_DIR, f'{self.dataset_name}.csv'))
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         '-do_bertsum', type=str2bool, nargs='?', const=True, default=True,
     )

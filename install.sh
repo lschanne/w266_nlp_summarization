@@ -10,7 +10,7 @@ D="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 BERT_DIR=${D}/data/pretrained_bert
 
 sudo apt-get update
-sudo apt-get install python3 unzip default-jre libxml-parser-perl
+sudo apt-get install python3 unzip default-jre libxml-parser-perl python3-venv
 
 cd ${D}
 python3 -m venv venv_w266_final
@@ -55,6 +55,6 @@ cd ${D}
 
 
 export PYTHONPATH="${PYTHONPATH}:${D}/BertSum/src"
-python ./preprocess_data.py
+python ./preprocess_data.py -do_bertsum 0 -do_t5 1
 
 cd ${PREV_DIR}
