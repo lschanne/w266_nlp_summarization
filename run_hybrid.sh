@@ -17,7 +17,7 @@ T5_MODEL="t5-base"
 mkdir -p ${OUTPUT_DIR}
 
 python hybrid_model.py \
-    -do_extraction 0 -train_abs 1 -gen_summaries 1 -do_evaluation 1 \
+    -do_extraction 0 -train_abs 0 -gen_summaries 0 -do_evaluation 1 \
     -bert_data_path ${BERT_DATA_PATH} \
     -abs_model_path ${OUTPUT_DIR}/abs_model \
     -ext_model_path ${EXT_MODEL_PATH} -batch_size ${BATCH_SIZE} \

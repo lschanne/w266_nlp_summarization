@@ -198,7 +198,7 @@ class HybridModel:
                 ]
                 start_idx += args.abs_batch_size
                 batch_idx += 1
-        
+
                 optimizer.zero_grad()
                 model.zero_grad()
                 free_memory()
@@ -211,8 +211,6 @@ class HybridModel:
 
                 loss.backward()
                 optimizer.step()
-                # xm.optimizer_step(optimizer)
-                # xm.mark_step()
 
                 del loss
                 free_memory()
@@ -336,7 +334,7 @@ class HybridModel:
             rouge.model_dir = rouge_dir
             rouge.system_dir = rouge_dir
             rouge.model_filename_pattern = 'prediction_#ID#'
-            rouge.system_filename_pattern = r'target_(d+)'
+            rouge.system_filename_pattern = r'target_(\d+)'
             scores = rouge_results_to_str(
                 rouge.output_to_dict(
                     rouge.convert_and_evaluate()
@@ -398,7 +396,9 @@ class HybridModel:
         })
         for col in ('article', 'highlights'):
             data[col] = data[col].apply(cls._clean_col)
-        
+        for col in ('article', 'highlights'):
+            data = data[data[col].apply(len) > 0]
+        data.dropna(inplace=True)
         data.to_csv(data_fh)
         return data
 
@@ -472,7 +472,7 @@ class HybridModel:
         if train:
             pattern = 'epoch_*_batch_*_model.pt'
         else:
-            pattern = f'epoch_{args.abs_epoch}_model.pt'
+            pattern = f'epoch_{args.abs_epochs}_model.pt'
         files = glob.glob(os.path.join(args.abs_model_path, pattern))
         if files:
             steps = []
@@ -484,8 +484,9 @@ class HybridModel:
                     epoch = int(split[-4]) - 1
                     batch = int(split[-2])
                 else:
-                    epoch = int(split(-2))
+                    epoch = int(split[-2])
                     batch = 0
+                steps.append((epoch, batch))
             if train:
                 max_batch = 0
                 max_epoch = 0
@@ -504,7 +505,7 @@ class HybridModel:
         else:
             if not train:
                 raise Exception(
-                    f'Could not find model for epoch {args.abs_epoch}'
+                    f'Could not find model for epoch {args.abs_epochs}'
                 )
             model = T5ForConditionalGeneration.from_pretrained(args.t5_model)
             epoch, batch = 0, 0
