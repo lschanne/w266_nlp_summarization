@@ -42,8 +42,17 @@ class HybridModel:
     @classmethod
     def main(cls, args):
         args = cls._update_args(args)
+        if args.do_extraction and args.do_abstraction:
+            raise Exception(
+                'If you have "-do_extraction" and "-do_abstraction" both set '
+                'to True, you\'re gonna have a bad day.'
+            )
+
         if args.do_extraction:
             cls.get_extractive_summaries(args)
+
+        if args.do_abstraction:
+            cls.abstractive_preprocessing(args)
 
         torch.backends.cudnn.deterministic = True
         if args.train_abs:
@@ -55,6 +64,33 @@ class HybridModel:
         if args.do_evaluation:
             cls.evaluate(args)
 
+    @staticmethod
+    def abstractive_preprocessing(args):
+        for corpus in ('train', 'valid', 'test'):
+            data_iter = Dataloader(
+                args,
+                load_dataset(args, corpus, shuffle=False),
+                args.test_batch_size,
+                args.device,
+                shuffle=False,
+                is_test=True,
+            )
+            articles = []
+            gold_summaries = []
+            for batch in data_iter:
+                articles.append(' '.join(batch.src_str[0]))
+                gold_summaries.append(batch.tgt_str[0])
+
+            summary_dir = os.path.join(args.output_dir, corpus)
+            if not os.path.exists(summary_dir):
+                os.makedirs(summary_dir)
+            for key, lines in (
+                ('articles', articles),
+                ('target', gold_summaries),
+            ):
+                lines = [x.strip() + '\n' for x in lines]
+                with open(os.path.join(summary_dir, key), 'w') as f:
+                    f.writelines(lines)
     @classmethod
     def get_extractive_summaries(cls, args):
         device = args.device
@@ -144,11 +180,12 @@ class HybridModel:
             if not os.path.exists(summary_dir):
                 os.makedirs(summary_dir)
             for key, summaries in (
-                ('extractive', prediction_summaries),
+                ('articles', prediction_summaries),
                 ('target', gold_summaries),
             ):
+                summaries = [x.strip() + '\n' for x in summaries]
                 with open(os.path.join(summary_dir, key), 'w') as f:
-                    f.write('\n'.join(x.strip() for x in summaries))
+                    f.writelines(summaries)
 
     @classmethod
     def train_abstractive_stage(cls, args):
@@ -300,7 +337,7 @@ class HybridModel:
             summary_dir = os.path.join(args.output_dir, corpus)
             if not os.path.exists(summary_dir):
                 os.makedirs(summary_dir)
-            with open(os.path.join(summary_dir, 'hybrid'), 'w') as f:
+            with open(os.path.join(summary_dir, 'output'), 'w') as f:
                 f.writelines(p + '\n' for p in predictions)
 
     @classmethod
@@ -309,7 +346,7 @@ class HybridModel:
             summary_dir = os.path.join(args.output_dir, corpus)
             with open(os.path.join(summary_dir, 'target'), 'r') as f:
                 targets = f.readlines()
-            with open(os.path.join(summary_dir, 'hybrid'), 'r') as f:
+            with open(os.path.join(summary_dir, 'output'), 'r') as f:
                 predictions = f.readlines()
             
             rouge_dir = os.path.join(args.output_dir, corpus, 'rouge_files')
@@ -343,7 +380,7 @@ class HybridModel:
             shutil.rmtree(rouge_dir)
 
             print(f'{corpus} rouge: {scores}')
-            with open(os.path.join(summary_dir, 'hybrid_rouge'), 'w') as f:
+            with open(os.path.join(summary_dir, 'output_rouge'), 'w') as f:
                 f.write(scores)
             
 
@@ -354,8 +391,7 @@ class HybridModel:
         if os.path.exists(data_fh):
             return pd.read_csv(data_fh)
 
-        with open(os.path.join(summary_dir, 'extractive'), 'r') as f:
-            # in this case 'article' is the extractive summary
+        with open(os.path.join(summary_dir, 'articles'), 'r') as f:
             articles = f.readlines()
 
         with open(os.path.join(summary_dir, 'target'), 'r') as f:
@@ -525,6 +561,9 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-abs_model_path', default=None,
+    )
+    parser.add_argument(
+        '-do_abstraction', type=str2bool, nargs='?', const=True, default=True,
     )
     parser.add_argument(
         '-do_extraction', type=str2bool, nargs='?', const=True, default=True,
