@@ -10,7 +10,6 @@ import glob
 import numpy as np
 import os
 import pandas as pd
-from pyrouge import Rouge155
 import re
 import shutil
 import sys
@@ -23,10 +22,11 @@ sys.path.extend([
 ])
 
 # PreSumm imports
-from cal_rouge import rouge_results_to_str
 from models.data_loader import Dataloader, load_dataset
 from models.model_builder import ExtSummarizer
 from models.reporter_ext import Statistics
+from others import pyrouge
+from others.utils import rouge_results_to_str
 from train import str2bool
 from train_extractive import model_flags as PreSumm_model_flags
 
@@ -289,7 +289,8 @@ class HybridModel:
         start_time = datetime.now()
         model = cls._get_abs_model(args)[0]
         tokenizer = args.tokenizer
-        for corpus in ('valid', 'test'):
+        # for corpus in ('valid', 'test'):
+        for corpus in ('test',):
             data = cls._get_data_for_abstraction(args, corpus=corpus)
             index = np.array(data.index)
             start_idx = 0
@@ -353,25 +354,19 @@ class HybridModel:
             if not os.path.exists(rouge_dir):
                 os.makedirs(rouge_dir)
 
-            idx = 0
-            for target, prediction in zip(targets, predictions):
-                for t in target.split('<q>'):
-                    for p in prediction.split('<q>'):
-                        idx += 1
-                        with open(
-                            os.path.join(rouge_dir, f'target_{idx}'), 'w'
-                        ) as f:
-                            f.write(t)
-                        with open(
-                            os.path.join(rouge_dir, f'prediction_{idx}'), 'w'
-                        ) as f:
-                            f.write(p)
+            for idx, (target, prediction) in enumerate(
+                zip(targets, predictions)
+            ):
+                with open(os.path.join(rouge_dir, f't_{idx}'), 'w') as f:
+                    f.write(target)
+                with open(os.path.join(rouge_dir, f'p_{idx}'), 'w') as f:
+                    f.write(prediction)
             
-            rouge = Rouge155()
+            rouge = pyrouge.Rouge155()
             rouge.model_dir = rouge_dir
             rouge.system_dir = rouge_dir
-            rouge.model_filename_pattern = 'prediction_#ID#'
-            rouge.system_filename_pattern = r'target_(\d+)'
+            rouge.model_filename_pattern = 'p_#ID#'
+            rouge.system_filename_pattern = r't_(\d+)'
             scores = rouge_results_to_str(
                 rouge.output_to_dict(
                     rouge.convert_and_evaluate()
