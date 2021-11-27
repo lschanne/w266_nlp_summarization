@@ -5,3 +5,4 @@ models/
 pyrouge/
 venv_*
 stanford-corenlp-full-2017-06-09*
+*.ipynb_checkpoints/
