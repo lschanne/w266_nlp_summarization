@@ -11,7 +11,7 @@ import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 BASE = os.path.dirname(DIR)
-OUTPUT_DIR = os.path.join(BASE, 'data', 'rouge_analysis')
+OUTPUT_DIR = os.path.join(BASE, 'data', 'rouge_analysis_1')
 sys.path.extend([
     os.path.join(BASE, 'PreSumm', 'src'),
 ])
@@ -28,10 +28,12 @@ def main(n_values=(1, 2, 4)):
     }
     with open(os.path.join(OUTPUT_DIR, 'articles'), 'r') as f:
         source_lines = [
-            re.sub(
-                r' +', ' ',
-                (source.replace(' ##', ' ').replace('[CLS]', ' ')
-                    .replace('[SEP]', ' ').replace('[PAD]', ' ')),
+            re.sub(r'^[a-z]', '', 
+                re.sub(
+                    r' +', ' ',
+                    (source.replace(' ##', ' ').replace('[CLS]', ' ')
+                        .replace('[SEP]', ' ').replace('[PAD]', ' ').lower()),
+                ),
             ).strip()
             for source in f.read().strip().split('\n')
         ]
@@ -44,7 +46,7 @@ def main(n_values=(1, 2, 4)):
         if iii % 500 == 0:
             print(
                 f'Computing novel ngrams for doc {iii} out of '
-                f'{len(source_lines)}; time elapsed: {start - datetime.now()}'
+                f'{len(source_lines)}; time elapsed: {datetime.now() - start}'
             )
         for n in n_values:
             source_grams = set(n_grams(source.split(), n))
@@ -52,8 +54,8 @@ def main(n_values=(1, 2, 4)):
                 summary_grams = set(n_grams(summary_lines[iii].split(), n))
                 novel = summary_grams - (summary_grams & source_grams)
                 novel_ngrams[name][n][0] += 1.0 * len(novel)
-                novel_ngrams[name][n][0] += len(summary_grams)
-                novel_ngrams[name][n][0] += 1.0 * len(novel) / (
+                novel_ngrams[name][n][1] += len(summary_grams)
+                novel_ngrams[name][n][2] += 1.0 * len(novel) / (
                     len(summary_lines[iii].split()) + 1e-6
                 )
     
@@ -69,6 +71,12 @@ def main(n_values=(1, 2, 4)):
 def get_summaries(name):
     with open(os.path.join(OUTPUT_DIR, name), 'r') as f:
         return [
-            re.sub(r' +', ' ', summary.replace('<q>', ' ')).strip()
+            re.sub(r'^[a-z]', '',
+            re.sub(r' +', ' ', summary.lower().replace('<q>', ' ')),
+        ).strip()
             for summary in f.read().strip().split('\n')
         ]
+
+if __name__ == '__main__':
+    main()
+
