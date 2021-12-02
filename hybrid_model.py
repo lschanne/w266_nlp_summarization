@@ -289,8 +289,7 @@ class HybridModel:
         start_time = datetime.now()
         model = cls._get_abs_model(args)[0]
         tokenizer = args.tokenizer
-        # for corpus in ('valid', 'test'):
-        for corpus in ('test',):
+        for corpus in ('valid', 'test'):
             data = cls._get_data_for_abstraction(args, corpus=corpus)
             index = np.array(data.index)
             start_idx = 0
@@ -543,7 +542,7 @@ class HybridModel:
         model = model.to(args.device)
         return model, epoch, batch
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t5_model', default='t5-large')
     parser.add_argument(
@@ -681,3 +680,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     HybridModel.main(args)
+
+if __name__ == '__main__':
+    main()
